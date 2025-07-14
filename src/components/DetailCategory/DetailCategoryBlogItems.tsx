@@ -1,0 +1,84 @@
+import { dateFormatter, removeBBCode } from "@/lib/utils";
+import Image from "next/image";
+import Link from "next/link";
+const { convert } = require('html-to-text');
+
+interface DetailCategoryBlogItemsProp {
+  item: Blog;
+}
+
+const DetailCategoryBlogItems: React.FC<DetailCategoryBlogItemsProp> = async ({ item }) => {
+  const html = item.excerpt || item.content || '';
+
+  const cleanHtml = removeBBCode(html);
+
+  const excerpt = convert(cleanHtml, {
+    wordwrap: false,
+    selectors: [
+      {
+        selector: 'h1',
+        format: 'inline'
+      },
+      {
+        selector: 'h2',
+        format: 'inline'
+      },
+      {
+        selector: 'h3',
+        format: 'inline'
+      }
+    ]
+  }).slice(0, 200)
+
+  return (
+
+    <div className="lg:flex lg:gap-[24px] pb-[24px] border-b-1 border-[#E9EAEC] last:border-0 cursor-pointer">
+      <div className="relative lg:w-full lg:max-w-[384px] aspect-[384/268] overflow-hidden rounded-[10px] shrink-0">
+        <Link href={`/blogs/${item.category_slug}/${item.slug.toLowerCase()}`}>
+          <Image
+            src={item.image?.[0] || '/images/placeholder.jpg'}
+            alt={item.image_alt || 'Default image'}
+            fill
+            quality={100}
+            className="object-cover"
+          />
+        </Link>
+      </div>
+      <div>
+        <Link href={`/blogs/${item.category_slug}/${item.slug.toLowerCase()}`}>
+          <h3 className="hover:text-[#EF4444] hover:underline font-bold text-[18px] leading-[32px] text-[#111827] mt-[16px] lg:mt-0 overflow-ellipsis line-clamp-2">
+            {item.title}
+          </h3>
+        </Link>
+
+        <div className="flex gap-[12px] mt-[4px] items-center">
+          <p className="flex items-center font-medium text-[16px] leading-[24px] text-[#111827]">
+            <span className="text-normal text-[14px] leading-[20px] text-[#111827] mr-[4px]">By</span>
+            <Link
+              href={`/author/${item.author_id}`}
+              className="hover:underline"
+            >
+              {item.author_name}
+            </Link>
+          </p>
+
+          <p className="font-normal text-[14px] leading-[20px] text-[#111827] opacity-50">{dateFormatter(item.created_at)}</p>
+        </div>
+
+        <Link href={`/blogs/${item.category_slug}/${item.slug.toLowerCase()}`}>
+          <p className="font-normal text-[16px] leading-[24px] mt-[8px] line-clamp-3 overflow-ellipsis text-[#687588]">{excerpt}</p>
+        </Link>
+        <p className="font-bold text-[12px] leading-[16px] text-[#0CAF60] bg-[#E7F7EF] rounded-[6px] py-[6px] px-[16px] w-fit mt-[8px]">
+          <Link
+            href={`/blogs/${item.category_slug}`}
+            className="hover:underline"
+          >
+            {item.category_name}
+          </Link>
+        </p>
+      </div>
+    </div>
+  )
+}
+
+export default DetailCategoryBlogItems;
